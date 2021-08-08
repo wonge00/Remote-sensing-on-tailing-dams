@@ -17,6 +17,22 @@ var sen2 = ee.ImageCollection("COPERNICUS/S2_SR"),
 var panel = ui.Panel({style: {width:'500px', position: 'bottom-left' }});
 ui.root.add(panel);
 
+// Initial parameters(default):
+var aoi = ee.Geometry.Point([120.656, 16.4919]);
+var startDate = '2020-06-01';
+var endDate = '2020-12-31';
+
+
+// Title
+panel.add(ui.Label({value: 'Remote sensing on tailing dams',
+  style: {
+    fontWeight: 'normal',
+    fontSize: '25px',
+    margin: '0 0 4px 0',
+    color: 'Blue',
+    padding: '10px'
+    }}));
+
 
 // Adding description before the drop-down list
 panel.add(ui.Label({value: 'Please select the tailing dam of interest',
@@ -38,25 +54,34 @@ panel.add(ui.Label({value: 'The NDVI and Fe2+ indices are calculated from the me
     padding: '10px'
     }}));
 
-// Adding the start date and end date
+// Adding the start date, and plot images again each time textbox is updated
 var selectStartYear = ui.Textbox({placeholder: 'Start',  value: '2020-06-01',
   style: {width: '100px'}}); 
+// Adding the end date, and plot images again each time textbox is updated
 var selectEndYear = ui.Textbox({placeholder: 'End',  value: '2020-12-31',
   style: {width: '100px'}}); 
+// Adding labels above the dates
 var start_label = ui.Label('Start Date',
   {margin: '0 0 0 10px',fontSize: '12px',color: 'gray'});
-var end_label = ui.Label('End Date',
+var end_label = ui.Label('End Date (YYYY-MM--DD)',
   {margin: '0 0 0 70px',fontSize: '12px',color: 'gray'});
 
+// Add a button to update images when pressed
+var enterConfirm = ui.Button({label: 'Update', style: {color: 'red'},
+  onClick: function(){
+    startDate = selectStartYear.getValue(); // Update the start from textbox
+    endDate = selectEndYear.getValue(); // Update the end date from textbox
+    plotImage(startDate, endDate, aoi); // Plot
+  }});
+
+
+// Add the labels and the textbox and update button to panel
 var startRange_subtext = ui.Panel([start_label, end_label],
   ui.Panel.Layout.flow('horizontal'));
-var nextRow = ui.Panel([selectStartYear, selectEndYear],
+var nextRow = ui.Panel([selectStartYear, selectEndYear, enterConfirm],
   ui.Panel.Layout.flow('horizontal'));
 panel.add(startRange_subtext).add(nextRow);
 
-
-var startDate = selectStartYear.getValue();
-var endDate = selectEndYear.getValue();
 
 
 
@@ -68,8 +93,16 @@ var aoiSelect = ui.Select({
     {label:'Coral Bay Nickel', value : ee.Geometry.Point([117.424, 8.564])}
     ],
   onChange : function(value){
+    aoi=value;  // Update aoi
+    plotImage(startDate, endDate, aoi); //Plot
+  }});
+
+panel.widgets().insert(1, aoiSelect); // Add the AOI list to panel at index 2
+
+
+var plotImage = function(startDate, endDate, aoi){
     Map.clear(); // Remove any layer left for the other locations
-    print(startDate,endDate)
+    
     // DEM
     var dem_ = ee.Image(dem.select('elevation')); 
     //Set parameters
@@ -84,7 +117,7 @@ var aoiSelect = ui.Select({
 
 
     //Sentinel-2 median
-    var sen2_median = sen2.filterBounds(value)
+    var sen2_median = sen2.filterBounds(aoi)
     .filterDate(startDate,endDate)
     .sort('CLOUDY_PIXEL_PERCENTAGE')  // Sort from the least cloudy images
     .limit(5) // then calculate the median of the 5 least cloudy image
@@ -113,8 +146,6 @@ var aoiSelect = ui.Select({
     Map.addLayer(sen2_fe, {'min':0.3, 'max':4}, 'Fe2+');
     
     
-    Map.centerObject(value, 16)
-  }});
-
-panel.widgets().insert(1, aoiSelect); // Add the AOI list to panel at index 2
-
+    //Centre the map
+    Map.centerObject(aoi, 16);
+};
