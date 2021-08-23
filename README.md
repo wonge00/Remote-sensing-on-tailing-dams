@@ -20,5 +20,5 @@ Free tutorials on GEE(python):
 External python library for GEE that might be helpful:
 https://github.com/giswqs/earthengine-py-notebooks
 
-There's an example of GEE Python in the other version branch
+There's an example of GEE Python in the other-versions branch
 </pre>
