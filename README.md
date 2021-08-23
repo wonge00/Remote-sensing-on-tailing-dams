@@ -1,6 +1,6 @@
 # Remote-sensing-on-tailings-dams
 
-A web app to allow user to view its changes and indices on a tailings dam
+A web app on tailings dam to allow user to view its changes and indices 
 <pre>
 
 The web app code for this github:
