@@ -15,4 +15,7 @@ Free tutorials on GEE(python):
 
 free tutorials on GEE(python):
   https://developers.google.com/earth-engine/guides/getstarted
+  
+External python library for GEE that might be helpful:
+https://github.com/giswqs/earthengine-py-notebooks
 </pre>
